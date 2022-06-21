@@ -55,7 +55,7 @@ const Slider = () => {
           modules={[Pagination, Scrollbar, A11y]}
           slidesPerView={1}
           pagination={{ clickable: true }}
-          style={{ height: "300px" }}>
+          style={{ height: "200px" }}>
           {listings.map(({ data, id }) => {
             return (
               <SwiperSlide

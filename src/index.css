@@ -409,7 +409,8 @@ button {
 }
 
 .categoryListingLink {
-  display: contents;
+  display: flex;
+  justify-content: space-between;
 }
 
 .categoryListingImg {
