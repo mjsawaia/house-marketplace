@@ -6,9 +6,9 @@ import {
   uploadBytesResumable,
   getDownloadURL,
 } from "firebase/storage";
-import { addDoc, collection, serverTimestamp } from "firebase/firestore";
+import { serverTimestamp, doc, updateDoc, getDoc } from "firebase/firestore";
 import { db } from "../firebase.config";
-import { useNavigate } from "react-router-dom";
+import { useNavigate, useParams } from "react-router-dom";
 import Spinner from "../components/Spinner";
 import { v4 as uuidv4 } from "uuid";
 import { toast } from "react-toastify";
@@ -29,11 +29,12 @@ const initialFormState = {
   longitude: 0,
 };
 
-const CreateListing = () => {
+const EditListing = () => {
   //eslint-disable-next-line
   const [geolocationEnabled, setGeolocationEnabled] = useState(true);
   const [loading, setLoading] = useState(false);
   const [formData, setFormData] = useState(initialFormState);
+  const [listing, setListing] = useState(null);
 
   const {
     type,
@@ -53,21 +54,43 @@ const CreateListing = () => {
 
   const auth = getAuth();
   const navigate = useNavigate();
+  const params = useParams();
 
+  // redirect if listing is not users
   useEffect(() => {
-    const unsubscribe = onAuthStateChanged(
-      auth,
-      (user) => {
-        if (user) {
-          setFormData({ ...formData, userRef: user.uid });
-        } else {
-          navigate("/sign-in");
-        }
-      },
-      //eslint-disable-next-line
-      []
-    );
+    if (listing && listing.userRef !== auth.currentUser.uid) {
+      toast.error("You do not own this listing");
+      navigate("/");
+    }
+  }, [auth.currentUser.uid, listing, navigate]);
 
+  // fetch listing to populate form/edit
+  useEffect(() => {
+    setLoading(true);
+    const fetchListing = async () => {
+      const docRef = doc(db, "listings", params.listingId);
+      const docSnap = await getDoc(docRef);
+      if (docSnap.exists()) {
+        setListing(docSnap.data());
+        setFormData({ ...docSnap.data(), address: docSnap.data().location });
+        setLoading(false);
+      } else {
+        navigate("/");
+        toast.error("Listing does not exist");
+      }
+    };
+    fetchListing();
+  }, [navigate, params.listingId]);
+
+  // set userRef to logged in user
+  useEffect(() => {
+    const unsubscribe = onAuthStateChanged(auth, (user) => {
+      if (user) {
+        setFormData({ ...formData, userRef: user.uid });
+      } else {
+        navigate("/sign-in");
+      }
+    });
     return unsubscribe;
     //eslint-disable-next-line
   }, [auth, navigate]);
@@ -172,7 +195,9 @@ const CreateListing = () => {
     delete formDataCopy.address;
     !formDataCopy.offer && delete formDataCopy.discountedPrice;
 
-    const docRef = await addDoc(collection(db, "listings"), formDataCopy);
+    //update listing
+    const docRef = doc(db, "listings", params.listingId);
+    await updateDoc(docRef, formDataCopy);
     setLoading(false);
     toast.success("Listing saves");
     navigate(`/category/${formDataCopy.type}/${docRef.id}`);
@@ -213,7 +238,7 @@ const CreateListing = () => {
   return (
     <div className="profile">
       <header>
-        <p className="pageHeader">Create a Listing</p>
+        <p className="pageHeader">Edit a Listing</p>
       </header>
       <main>
         <form onSubmit={onSubmit}>
@@ -431,7 +456,7 @@ const CreateListing = () => {
             required
           />
           <button type="submit" className="primaryButton createListingButton">
-            Create Listing
+            Edit Listing
           </button>
         </form>
       </main>
@@ -439,4 +464,4 @@ const CreateListing = () => {
   );
 };
 
-export default CreateListing;
+export default EditListing;
