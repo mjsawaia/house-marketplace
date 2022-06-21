@@ -72,19 +72,6 @@ button {
   justify-content: center;
 }
 
-.removeIcon {
-  cursor: pointer;
-  position: absolute;
-  top: -3%;
-  right: 0%;
-}
-.editIcon {
-  cursor: pointer;
-  position: absolute;
-  top: -3.4%;
-  right: 20px;
-}
-
 .pageContainer,
 .offers,
 .profile,
@@ -396,6 +383,12 @@ button {
   margin-bottom: 10rem;
 }
 
+.listingsList {
+  display: flex;
+  flex-direction: column;
+  padding: 0;
+}
+
 .categoryListings {
   padding: 0;
 }
@@ -409,15 +402,27 @@ button {
 }
 
 .categoryListingLink {
+  display: contents;
+}
+
+.listingButtons {
   display: flex;
-  justify-content: space-between;
+}
+
+.removeIcon {
+  margin: 0.5rem;
+}
+
+.editIcon {
+  margin: 0.5rem;
 }
 
 .categoryListingImg {
   width: 30%;
-  height: 100px;
+  height: 100%;
   border-radius: 1.5rem;
   object-fit: cover;
+  margin: 0.3rem;
 }
 @media (min-width: 1024px) {
   .categoryListingImg {
@@ -428,6 +433,7 @@ button {
 
 .categoryListingDetails {
   width: 65%;
+  margin: 0.35rem;
 }
 @media (min-width: 1024px) {
   .categoryListingDetails {
